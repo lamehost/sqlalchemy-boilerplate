@@ -76,8 +76,8 @@ class Boilerplate:
         if session is True:
             raise ValueError('Session can be either false or AsyncSession')
 
-        self.session = session
-        self.engine = False
+        self.session = session or None
+        self.engine = None
 
     def __enter__(self):
         self.connect()
@@ -132,10 +132,10 @@ class Boilerplate:
 
     def disconnect(self):
         """Safely disconnect the database"""
-        if self.session is not None:
+        if self.session:
             self.session.close()
 
-        if self.engine is not None:
+        if self.engine:
             self.engine.dispose()
 
         LOGGER.info('Disconnected from database')
@@ -214,7 +214,7 @@ class AsyncBoilerplate:
         if session is True:
             raise ValueError('Session can be either false or AsyncSession')
 
-        self.session = session
+        self.session = session or None
         self.engine = None
 
     async def __aenter__(self):
@@ -273,10 +273,10 @@ class AsyncBoilerplate:
 
     async def disconnect(self):
         """Safely disconnect the database"""
-        if self.session is not None:
+        if self.session:
             await self.session.close()
 
-        if self.engine is not None:
+        if self.engine:
             await self.engine.dispose()
 
         LOGGER.info('Disconnected from database')

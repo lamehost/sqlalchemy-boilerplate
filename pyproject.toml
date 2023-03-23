@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sqlalchemy-boilerplate"
-version = "0.1.1"
+version = "0.1.2"
 description = "Minimal SQLAlchemy boilerplate"
 authors = ["Marco Marzetti <marco@lamehost.it>"]
 license = "MIT"
