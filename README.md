@@ -36,7 +36,7 @@ database = AsyncBoilerplate(
     echo=False,
     create_tables=True
 )
-await database.connext()
+await database.connect()
 async for row in database.execute(...):
     print(row)
 await database.disconnect()
