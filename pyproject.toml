@@ -1,3 +1,9 @@
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 100
+
 [tool.poetry]
 name = "sqlalchemy-boilerplate"
 version = "0.1.2"
@@ -18,6 +24,8 @@ psycopg2-binary = "^2.9.5"
 flake8 = "^6.0.0"
 pytest-cov = "^4.0.0"
 pylint = "^2.17.0"
+bandit = "^1.7.9"
+black = "^24.8.0"
 
 [build-system]
 requires = ["poetry-core"]
