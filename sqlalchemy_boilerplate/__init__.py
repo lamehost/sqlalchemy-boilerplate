@@ -31,7 +31,7 @@ async with AsyncBoilerplate(
         print(row)
 ```
 
-# Or as regular classes:
+# Or as regular class:
 ```
 database = AsyncBoilerplate(
     url="sqlite://",
