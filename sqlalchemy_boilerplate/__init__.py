@@ -45,11 +45,7 @@ await database.disconnect()
 ```
 """
 
-from .common import BASE
 from .boilerplate import AsyncBoilerplate, Boilerplate
+from .common import BASE
 
-__all__ = [
-  'BASE',
-  'AsyncBoilerplate',
-  'Boilerplate'
-]
+__all__ = ["BASE", "AsyncBoilerplate", "Boilerplate"]

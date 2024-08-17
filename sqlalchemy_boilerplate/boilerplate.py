@@ -4,24 +4,19 @@ Defines the major class provided by the package:
  - AsyncBoilerplate: SQL database abstraction class with async methods
 """
 
-
-import logging
-from urllib.parse import urlparse
-from typing import Union, Generator, AsyncGenerator
 import json
+import logging
+from typing import AsyncGenerator, Generator, Union
+from urllib.parse import urlparse
 
 from sqlalchemy import create_engine
-from sqlalchemy.sql import text
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.exc import (
-    SQLAlchemyError,
-    OperationalError
-)
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.exc import OperationalError, SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
+from sqlalchemy.sql import text
 
 from .common import BASE
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -40,6 +35,7 @@ class Boilerplate:
              is created
 
     """
+
     def __init__(
         self,
         url: str,
@@ -51,30 +47,25 @@ class Boilerplate:
         self.__create_tables = create_tables
         self.__engine_kwargs = {
             "echo": echo,
-            "json_serializer": lambda obj: json.dumps(
-                obj,
-                ensure_ascii=False,
-                default=str
-            )
+            "json_serializer": lambda obj: json.dumps(obj, ensure_ascii=False, default=str),
         }
         # We only need SQLite for unittest, but we're going to make it a
         # first class citizen anyway
-        if parsed_url.scheme.lower() == 'postgresql':
+        if parsed_url.scheme.lower() == "postgresql":
             self.url = url
-        elif parsed_url.scheme.lower() == 'sqlite':
+        elif parsed_url.scheme.lower() == "sqlite":
             self.url = url
             # StaticPool is needed when SQLite is ran in memory
-            self.__engine_kwargs['poolclass'] = StaticPool
-            self.__engine_kwargs['connect_args'] = {"check_same_thread": False}
+            self.__engine_kwargs["poolclass"] = StaticPool
+            self.__engine_kwargs["connect_args"] = {"check_same_thread": False}
         else:
             error = (
-                'Database can be either "sqlite" or "postgresql", '
-                f'not: "{parsed_url.scheme}"'
+                'Database can be either "sqlite" or "postgresql", ' f'not: "{parsed_url.scheme}"'
             )
             raise ValueError(error)
 
         if session is True:
-            raise ValueError('Session can be either false or AsyncSession')
+            raise ValueError("Session can be either false or AsyncSession")
 
         self.session = session or None
         self.engine = None
@@ -103,7 +94,7 @@ class Boilerplate:
             if not force:
                 return self.session
 
-        LOGGER.info('Connecting to database')
+        LOGGER.info("Connecting to database")
 
         try:
             self.engine = create_engine(self.url, **self.__engine_kwargs)
@@ -112,11 +103,7 @@ class Boilerplate:
             if self.__create_tables:
                 BASE.metadata.create_all(bind=self.engine)
 
-            session = sessionmaker(
-                autocommit=False,
-                autoflush=False,
-                bind=self.engine
-            )
+            session = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
 
             self.session = session()
         except SQLAlchemyError as error:
@@ -138,7 +125,7 @@ class Boilerplate:
         if self.engine:
             self.engine.dispose()
 
-        LOGGER.info('Disconnected from database')
+        LOGGER.info("Disconnected from database")
 
     def execute(self, query: str) -> Generator[tuple, str, None]:
         """
@@ -156,11 +143,7 @@ class Boilerplate:
         """
         query = text(query)
         with self.engine.begin() as connection:
-            with connection.execution_options(
-                stream_results=True
-            ).execute(
-                query
-            ) as rows:
+            with connection.execution_options(stream_results=True).execute(query) as rows:
                 yield from rows
 
 
@@ -188,31 +171,26 @@ class AsyncBoilerplate:
         self.__create_tables = create_tables
         self.__engine_kwargs = {
             "echo": echo,
-            "json_serializer": lambda obj: json.dumps(
-                obj,
-                ensure_ascii=False,
-                default=str
-            )
+            "json_serializer": lambda obj: json.dumps(obj, ensure_ascii=False, default=str),
         }
         # We only need SQLite for unittest, but we're going to make it a
         # first class citizen anyway
         parsed_url = urlparse(url)
-        if parsed_url.scheme.lower() == 'postgresql':
-            self.url = f'postgresql+asyncpg://{url[13:]}'
-        elif parsed_url.scheme.lower() == 'sqlite':
-            self.url = f'sqlite+aiosqlite://{url[9:]}'
+        if parsed_url.scheme.lower() == "postgresql":
+            self.url = f"postgresql+asyncpg://{url[13:]}"
+        elif parsed_url.scheme.lower() == "sqlite":
+            self.url = f"sqlite+aiosqlite://{url[9:]}"
             # StaticPool is needed when SQLite is ran in memory
-            self.__engine_kwargs['poolclass'] = StaticPool
-            self.__engine_kwargs['connect_args'] = {"check_same_thread": False}
+            self.__engine_kwargs["poolclass"] = StaticPool
+            self.__engine_kwargs["connect_args"] = {"check_same_thread": False}
         else:
             error = (
-                'Database can be either "sqlite" or "postgresql", '
-                f'not: "{parsed_url.scheme}"'
+                'Database can be either "sqlite" or "postgresql", ' f'not: "{parsed_url.scheme}"'
             )
             raise ValueError(error)
 
         if session is True:
-            raise ValueError('Session can be either false or AsyncSession')
+            raise ValueError("Session can be either false or AsyncSession")
 
         self.session = session or None
         self.engine = None
@@ -241,7 +219,7 @@ class AsyncBoilerplate:
             if not force:
                 return self.session
 
-        LOGGER.info('Connecting to database')
+        LOGGER.info("Connecting to database")
 
         try:
             self.engine = create_async_engine(self.url, **self.__engine_kwargs)
@@ -251,16 +229,13 @@ class AsyncBoilerplate:
                 try:
                     async with self.engine.begin() as connection:
                         await connection.run_sync(BASE.metadata.create_all)
-                    LOGGER.info('Connected to database')
+                    LOGGER.info("Connected to database")
                 except OperationalError as error:
                     LOGGER.error(error)
                     raise RuntimeError(error) from error
 
             make_session = sessionmaker(
-                autocommit=False,
-                autoflush=False,
-                bind=self.engine,
-                class_=AsyncSession
+                autocommit=False, autoflush=False, bind=self.engine, class_=AsyncSession
             )
 
         except SQLAlchemyError as error:
@@ -279,7 +254,7 @@ class AsyncBoilerplate:
         if self.engine:
             await self.engine.dispose()
 
-        LOGGER.info('Disconnected from database')
+        LOGGER.info("Disconnected from database")
 
     async def execute(self, query: str) -> AsyncGenerator[tuple, str]:
         """
